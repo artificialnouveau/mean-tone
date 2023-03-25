@@ -1,14 +1,20 @@
-import numpy as np, composer
+import numpy as np
 import scipy.io.wavfile as wav
 import scipy.fftpack as fft
-from itertools import izip_longest
+from itertools import zip_longest
 
 import_rate, import_data = wav.read('wav/flute.wav')
 import_bpm = 62 #manually set
 
 def grouper(iterable, n, fillvalue = None):
     args = [iter(iterable)] * n
-    return izip_longest(fillvalue = fillvalue, *args)
+    return zip_longest(fillvalue = fillvalue, *args)
+
+def generate_tone_series(data, duration):
+    chord_list = []
+    for tone in data:
+        chord_list.append([tone, duration, 6000])
+    return generate_song(chord_list)
 
 def average_frequency(rate, data):
     sample_length = len(data)
@@ -32,6 +38,6 @@ def quarter_note_frequencies(rate, data, bpm):
 
 def create_wav(rate, data, bpm):
     duration = 60.0 / bpm #seconds per beat
-    wav.write('wav/flute_avg.wav', rate, np.array(composer.generate_tone_series(data, duration), dtype = np.int16))
+    wav.write('wav/flute_avg.wav', rate, np.array(generate_tone_series(data, duration), dtype = np.int16))
 
 create_wav(import_rate, quarter_note_frequencies(import_rate, import_data, import_bpm), import_bpm)
