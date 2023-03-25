@@ -3,6 +3,7 @@
 import math
 import numpy as np
 import scipy.io.wavfile as wav
+import functools
 
 sentinel = object()
 sin = lambda f, t, sr: math.sin( 2 * math.pi * t * f / sr )
@@ -70,24 +71,24 @@ def generate_chord ( frequencies, duration, max_volume, sustain_volume = sentine
 
     a_envelope = lambda accum, f: accum + sin( f, t, sample_rate ) * max_volume * t / attack
     for t in np.arange( attack ):
-        tone.append( reduce( a_envelope, frequencies, 0 ) )
+        tone.append( functools.reduce( a_envelope, frequencies, 0 ) )
 
     d_envelope = lambda accum, f: accum + sin( f, d_start + t, sample_rate ) * max_volume * ( 1 - s_drop_factor * t / decay )
     for t in np.arange( decay ):
-        tone.append( reduce( d_envelope, frequencies, 0 ) )
+        tone.append( functools.reduce( d_envelope, frequencies, 0 ) )
 
     s_envelope = lambda accum, f: accum + sin( f, s_start + t, sample_rate ) * sustain_volume
     for t in np.arange( sustain ):
-        tone.append( reduce( s_envelope, frequencies, 0 ) )
+        tone.append( functools.reduce( s_envelope, frequencies, 0 ) )
 
     r_envelope = lambda accum, f: accum + sin( f, r_start + t, sample_rate ) * sustain_volume * ( 1 - t / release )
     for t in np.arange( release ):
-        tone.append( reduce( r_envelope, frequencies, 0 ) )
+        tone.append( functools.reduce( r_envelope, frequencies, 0 ) )
 
     return tone
 
 def generate_song(chord_list):
-    return reduce(lambda accum, current: accum + generate_chord( *current ), chord_list, [])
+    return functools.reduce(lambda accum, current: accum + generate_chord( *current ), chord_list, [])
 
 def generate_tone_series(data, duration):
     chord_list = []
